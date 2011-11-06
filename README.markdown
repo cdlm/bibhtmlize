@@ -1,12 +1,19 @@
 # bibhtmlize
 
-`bibhtmlize` is a Ruby wrapper around a deviously hacked [BibTeX](http://www.bibtex.org/) style that generates HTML rather than TeX output.
-It reads a BibTeX database file, and produces a sorted list of entries on stdout.
+`bibhtmlize` is a Ruby wrapper around a rather deviously hacked [BibTeX style that generates HTML][bibhtml] rather than TeX output.
+It reads a [BibTeX database file](http://www.bibtex.org/), and produces a sorted list of entries on stdout.
+
+Most common use case, for inclusion in a larger web page:
 
     bibhtmlize foo.bib > foo.partial.html
     
-    # add basic <html><head> etc to make a (technically) complete HTML page:
+To add `<html><head>` etc. and produce a very basic but technically complete HTML document:
+
     bibhtmlize --wrap foo.bib > foo.html
+
+The default BibTeX style classifies entries per publication type (journals, conferences, workshops, etc) as is usual for someone's list of scientific publications. That can be changed by using a different style, e.g. the original one from [Bibhtml][]:
+
+    bibhtmlize --style plainhtml foo.bib > foo.html
 
 See also `bibhtmlize --help`.
 
@@ -18,5 +25,13 @@ See also `bibhtmlize --help`.
 
 ### Disclaimer
 
-I shamelessly took ideas and stuff from [Bibhtml](http://nxg.me.uk/dist/bibhtml/) and from Nicolas Markey's [publist](http://www.lsv.ens-cachan.fr/~markey/BibTeX/publist/), then tweaked a few things to match my bibliography bookkeeping conventions and metadata. I won't pretend it's flexible or useable by anyone else than me, but hey… it's a start.
+I shamelessly took ideas and code from a couple other cool projects:
+
+- [Norman Gray's Bibhtml][bibhtml] for making BibTeX output HTML rather than `.bbl`, and
+- [Nicolas Markey's `publist`](http://www.lsv.ens-cachan.fr/~markey/BibTeX/publist/) for classifying publications by type.
+
+On top of that I tweaked a few things to match my bibliography bookkeeping conventions and metadata.
+I won't pretend it's flexible or useable by anyone else than me, but hey… it's a start.
+
+[bibhtml]: http://nxg.me.uk/dist/bibhtml/
 

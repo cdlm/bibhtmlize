@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-BIBSTYLE = 'plainhtml'
+BIBSTYLE = File.join(File.dirname(__FILE__), 'htmlize')
 SEDFIX = File.join(File.dirname(__FILE__), 'fixbibtex.sed')
 AUX, BBL, BLG = %w{aux bbl blg}.collect {|e| "tmp.bibhtmlize.#{e}" }
 HTML_PRE = <<-EOF
