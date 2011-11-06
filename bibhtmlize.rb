@@ -1,68 +1,77 @@
 #!/usr/bin/env ruby
 
+BIBSTYLE = 'plainhtml'
+SEDFIX = 'fixbibtex.sed'
+AUX, BBL, BLG = %w{aux bbl blg}.collect {|e| "tmp.bibhtmlize.#{e}" }
 HTML_PRE = <<-EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <body>
 EOF
-
 HTML_POST = <<-EOF
     </body>
 </html>
 EOF
 
+$quiet = false
 def message(str)
   $stderr.puts str unless $quiet
 end
+def fatal(str)
+  message str
+  exit 1
+end
 
-require "Getopt/Declare"
-$wrap = false
-$clean = true
-$bibfiles = []
-$bibstyle = 'plainhtml'
-$quiet = false
 
-args = Getopt::Declare.new <<-EOF
-Converts BibTeX to HTML (on standard output)
-
-  -w[rap]             Wrap generated html in a full page (header/footer)
-    { $wrap = true }
+require 'cri'
+command = Cri::Command.define do
+  name    'bibhtmlize'
+  usage   'bibhtmlize [options] bibfile(s)'
+  summary 'Run bibtex and process its output into HTML'
   
-  -k[eep]             Keep intermediary file when finished
-    { $clean = false }
-  
-  -s[tyle] <bibstyle> BibTeX style file (defaults to plainhtml.bst)
-    { $bibstyle = bibstyle }
-  
-  <bibfile>...        BibTeX database(s) [required]
-    { $bibfiles = bibfile }
-
-  -q                  Quiet
-    { $quiet = true }
-EOF
-
-AUX = 'tmp.htmlize.aux'
-BBL = 'tmp.htmlize.bbl'
-File.open(AUX, 'w') do |aux|
-  message "Generating .aux file..."
-  $bibfiles.each do |each|
-    aux.puts "\\bibdata{#{each}}"
+  flag     :w, :wrap,  'Wrap generated html in a full page (header/footer)'
+  required :s, :style, 'BibTeX style file (defaults to plainhtml.bst)'
+  flag     :k, :keep,  'Keep intermediary files when finished'
+  flag     :q, :quiet, 'Quiet'
+  flag     :h, :help,  'Show usage information' do |value, cmd|
+    puts cmd.help
+    exit 0
   end
-  aux.puts "\\bibstyle{#{$bibstyle}}"
-  aux.puts "\\citation{*}"
+
+  run do |opts, args, cmd|
+    if args.empty?
+      message "No bibliography files given!"
+      exit 1
+    end
+
+    begin
+      File.open(AUX, 'w') do |aux|
+        message "Generating .aux file..."
+        args.each do |each|
+          aux.puts "\\bibdata{#{each}}"
+        end
+        aux.puts "\\bibstyle{#{opts[:style] || BIBSTYLE}}"
+        aux.puts "\\citation{*}"
+      end
+
+      message "Running BibTeX..."
+      system "bibtex #{AUX} >&2" || fatal('BibTeX failed')
+
+      message "Fixing up the HTML..."
+      $stdout.write(HTML_PRE) if opts[:wrap]
+      system "sed -f #{SEDFIX} #{BBL}" || fatal('sed failed')
+      $stdout.write(HTML_POST) if opts[:wrap]
+    ensure
+      unless opts[:keep]
+        message "Cleaning up..."
+        [AUX, BBL, BLG].each do |f|
+          File.delete(f) if File.file?(f)
+        end
+      end
+    end
+  end
 end
 
-message "Running BibTeX on #{AUX}..."
-system "bibtex #{AUX} >&2"
+command.run(ARGV) if __FILE__ == $0
 
-message "Fixing up the HTML..."
-$stdout.write(HTML_PRE) if $wrap
-system "sed -f fixbibtex.sed #{BBL}"
-$stdout.write(HTML_POST) if $wrap
-
-if $clean
-  message "Cleaning up..."
-  File.delete(AUX) if File.file?(AUX)
-  File.delete(BBL) if File.file?(BBL)
-end
