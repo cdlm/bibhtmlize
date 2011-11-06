@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 BIBSTYLE = 'plainhtml'
-SEDFIX = 'fixbibtex.sed'
+SEDFIX = File.join(File.dirname(__FILE__), 'fixbibtex.sed')
 AUX, BBL, BLG = %w{aux bbl blg}.collect {|e| "tmp.bibhtmlize.#{e}" }
 HTML_PRE = <<-EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -14,9 +14,9 @@ HTML_POST = <<-EOF
 </html>
 EOF
 
-$quiet = false
+$verbose = false
 def message(str)
-  $stderr.puts str unless $quiet
+  $stderr.puts str if $verbose
 end
 def fatal(str)
   message str
@@ -33,7 +33,9 @@ command = Cri::Command.define do
   flag     :w, :wrap,  'Wrap generated html in a full page (header/footer)'
   required :s, :style, 'BibTeX style file (defaults to plainhtml.bst)'
   flag     :k, :keep,  'Keep intermediary files when finished'
-  flag     :q, :quiet, 'Quiet'
+  flag     :v, :verbose, 'Show progress' do |value|
+    $verbose = value
+  end
   flag     :h, :help,  'Show usage information' do |value, cmd|
     puts cmd.help
     exit 0
@@ -56,7 +58,7 @@ command = Cri::Command.define do
       end
 
       message "Running BibTeX..."
-      system "bibtex #{AUX} >&2" || fatal('BibTeX failed')
+      system "bibtex -terse #{AUX} >&2" || fatal('BibTeX failed')
 
       message "Fixing up the HTML..."
       $stdout.write(HTML_PRE) if opts[:wrap]
