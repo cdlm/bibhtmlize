@@ -33,5 +33,5 @@ I shamelessly took ideas and code from a couple other cool projects:
 On top of that I tweaked a few things to match my bibliography bookkeeping conventions and metadata.
 I won't pretend it's flexible or useable by anyone else than me, but hey… it's a start.
 
-[bibhtml]: http://nxg.me.uk/dist/bibhtml/
+[bibhtml]: http://purl.org/nxg/dist/bibhtml
 
