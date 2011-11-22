@@ -23,7 +23,6 @@ def fatal(str)
   exit 1
 end
 
-
 require 'cri'
 command = Cri::Command.define do
   name    'bibhtmlize'
@@ -76,4 +75,3 @@ command = Cri::Command.define do
 end
 
 command.run(ARGV) if __FILE__ == $0
-
