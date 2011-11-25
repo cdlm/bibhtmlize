@@ -30,7 +30,6 @@
 
 ENTRY
   { address
-    acceptance
     author
     booktitle
     chapter
@@ -40,13 +39,11 @@ ENTRY
     institution
     journal
     key
-    keywords
     month
     note
     number
     organization
     pages
-    private
     publisher
     school
     series
@@ -54,8 +51,12 @@ ENTRY
     type
     volume
     year
-    isbn
+    acceptance
+    distinction
     hal
+    isbn
+    keywords
+    private
     eprint % urlbst
     doi % urlbst
     pubmed % urlbst
@@ -365,7 +366,7 @@ FUNCTION {emphasize}
   if$
 }
 
-FUNCTION {html.span}
+FUNCTION {html.span} % text class --
 {
   "<span class='" swap$ * "'>" *
   swap$ *
@@ -799,7 +800,7 @@ FUNCTION {output.url}
 }
 
 FUNCTION {output.notes}
-{ acceptance empty$ note empty$ and not
+{ acceptance empty$ note empty$ distinction empty$ and and not
     { "notes" new.span.block
       acceptance empty$
         'skip$
@@ -808,6 +809,10 @@ FUNCTION {output.notes}
       note empty$
         'skip$
         { note output.nonnull new.sentence }
+      if$
+      distinction empty$
+        'skip$
+        { distinction "award" html.span output.nonnull new.sentence }
       if$
     }
     'skip$
